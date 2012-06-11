@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import argparse
+from zeromr.worker import Worker
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--mapper', default='zeromr.samples.word_count')
+    parser.add_argument('--sender-socket', default='tcp://*:5555')
+    parser.add_argument('--shuffler-socket', default='tcp://127.0.0.1:5556')
+    args = parser.parse_args()
+    node = Worker(sender_socket=args.sender_socket,
+                  shuffler_socket=args.shuffler_socket,
+                  mapper=args.mapper)
+    print('Starting worker node: {0}()'.format(args.mapper))
+    node.start()
+
+
+if __name__ == '__main__':
+    main()
