@@ -20,6 +20,7 @@ class Sender(BaseEndpoint):
         self.reduce_store = RedisStore(prefix='{0}:reduce'.format(self.name))
         self.reduce_store.cleanup()
         self.available_workers = set()
+        self.busy_workers = set()
 
     def start(self):
         while True:
@@ -33,8 +34,10 @@ class Sender(BaseEndpoint):
                     self.send_reduce_task(worker)
                 else:
                     self.send_shutdown_task(worker)
-            if not self.has_map_tasks() and not self.has_reduce_tasks() \
-                    and not self.available_workers:
+            if not self.has_map_tasks() and \
+                    not self.has_reduce_tasks() and \
+                    not self.available_workers and \
+                    not self.busy_workers:
                 break
         self.sock.close()
         self.map_store.cleanup()
@@ -56,9 +59,13 @@ class Sender(BaseEndpoint):
         self.send_json('keep_going', target=source)
 
     def handle_map_end_message(self, message, source):
+        if source in self.busy_workers:
+            self.busy_workers.remove(source)
         return self.handle_init_message(message, source)
 
     def handle_reduce_end_message(self, message, source):
+        if source in self.busy_workers:
+            self.busy_workers.remove(source)
         return self.handle_init_message(message, source)
 
     def get_available_worker(self):
@@ -77,6 +84,7 @@ class Sender(BaseEndpoint):
             'source': source,
             'source_reader': 'zeromr.samples.read_file',
         }
+        self.busy_workers.add(worker)
         self.send_json('map', message=message, target=worker)
 
     def has_reduce_tasks(self):
@@ -89,9 +97,12 @@ class Sender(BaseEndpoint):
             'key': key,
             'values': values,
         }
+        self.busy_workers.add(worker)
         self.send_json('reduce', message=message, target=worker)
 
     def send_shutdown_task(self, worker):
         self.send_json('shutdown', target=worker)
         if worker in self.available_workers:
             del self.available_workers[worker]
+        if worker in self.busy_workers:
+            del self.busy_workers[worker]

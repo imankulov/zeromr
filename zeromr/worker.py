@@ -30,7 +30,7 @@ class Worker(BaseEndpoint):
 
     endpoint_type = 'worker'
 
-    def __init__(self, sender_socket, mapper):
+    def __init__(self, sender_socket):
         super(Worker, self).__init__()
         self.sock = self.context.socket(zmq.REQ)
         self.sock.setsockopt(zmq.IDENTITY, self.name)

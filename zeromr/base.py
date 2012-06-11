@@ -4,8 +4,7 @@ import json
 import socket
 import zmq
 
-from . import logger
-
+from zeromr import logger
 
 class BaseEndpoint(object):
 

@@ -13,7 +13,6 @@ def word_count_reduce(word, values):
     """
     "Reducer". Count number of words
     """
-    print word, values
     yield word, sum(values)
 
 

@@ -18,7 +18,6 @@ setup(
     author_email='info@netangels.ru',
     packages=find_packages(),
     scripts=[
-        'bin/shuffler',
         'bin/worker',
         'bin/sender',
     ],
