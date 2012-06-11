@@ -12,12 +12,12 @@ def main():
     parser.add_argument('--my-socket', default='tcp://127.0.0.1:5555')
     args = parser.parse_args()
 
-    node = Sender(my_socket=args.my_socket)
-    print('Starting sender with delay of {} sec'.format(args.delay))
-    time.sleep(args.delay)
     with open(args.sources_file) as fd:
         source_list = [ line.strip() for line in fd.readlines() ]
-    node.start(source_list)
+    node = Sender(my_socket=args.my_socket, source_list=source_list)
+    print('Starting sender with delay of {} sec'.format(args.delay))
+    time.sleep(args.delay)
+    node.start()
 
 
 if __name__ == '__main__':

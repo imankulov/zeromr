@@ -1,8 +1,30 @@
 # -*- coding: utf-8 -*-
+import os
 
-def word_count(key, value):
+def word_count_map(key, value):
     """
-    count number of words
+    "Mapper". Count number of words
     """
     for word in value.split():
         yield word, 1
+
+
+def word_count_reduce(word, values):
+    """
+    "Reducer". Count number of words
+    """
+    print word, values
+    yield word, sum(values)
+
+
+def read_file(source):
+    """
+    "Source reader". Reads contents of the file line by line
+
+    Yield key, value in the form of (lineno, line)
+    """
+    if not os.path.isfile(source):
+        return
+    with open(source) as fd:
+        for i, line in enumerate(fd.readlines()):
+            yield i, line.strip()

@@ -4,12 +4,17 @@ from zeromr.kvstore import RedisStore
 
 
 def test_kvstore():
-    store = RedisStore()
+    store = RedisStore('prefix')
     store.cleanup()
-    store.save('foo', 'bar')
-    store.save('foo', 'baz')
+    # store two values with the same key
+    store.save(u'foö', u'bar')
+    store.save(u'foö', 1)
+    # get this key
     key, values = store.get_all().next()
-    eq_(key, 'foo')
-    eq_(values, ['bar', 'baz'])
+    eq_(key, u'foö')
+    eq_(values, [u'bar', 1])
+    # get and delete random key
+    key, values = store.get_random()
+    # nothing left here
+    eq_(store.has_keys(), False)
     store.cleanup()
-    eq_(list(store.get_all()), [])
