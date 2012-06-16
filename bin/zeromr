@@ -1,0 +1,80 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import time
+import logging
+from multiprocessing import Process
+from zeromr.worker import Worker
+from zeromr.sender import Sender
+from zeromr import colorizing
+from zeromr import cmdln
+from zeromr import logger
+
+
+class Manage(cmdln.Cmdln):
+
+    #--- management command for worker
+
+    @cmdln.option('-l', '--log', default='INFO')
+    @cmdln.option('-s', '--sender-socket', default='tcp://127.0.0.1:5555')
+    @cmdln.option('-p', '--processes', default=1, type=int)
+    def do_worker(self, subcmd, opts):
+        """
+        ${cmd_name}: Run zeromr worker
+
+        ${cmd_usage}
+        ${cmd_option_list}
+        """
+        self.setup_logger(opts)
+        if opts.processes == 1:
+            self.start_worker(opts.sender_socket)
+        else:
+            self.start_multiple_workers(opts.processes, opts.sender_socket)
+
+    def start_multiple_workers(self, num, sender_socket):
+            processes = []
+            for _ in xrange(num):
+                processes.append(Process(target=self.start_worker,
+                                  args=[sender_socket]))
+            for proc in processes:
+                proc.start()
+            for proc in processes:
+                proc.join()
+
+    def start_worker(self, sender_socket):
+        node = Worker(sender_socket=sender_socket)
+        logger.info('Starting worker node: %s', node.name)
+        node.start()
+
+    #--- management command for sender
+
+    @cmdln.option('-l', '--log', default='INFO')
+    @cmdln.option('-d', '--delay', type=int, default=2)
+    @cmdln.option('-s', '--my-socket', default='tcp://*:5555')
+    @cmdln.option('-f', '--sources-file')
+    def do_sender(self, subcmd, opts):
+        """
+        ${cmd_name}: Run zeromr sender
+
+        ${cmd_usage}
+        ${cmd_option_list}
+        """
+        self.setup_logger(opts)
+        with open(opts.sources_file) as fd:
+            source_list = [line.strip() for line in fd.readlines()]
+        node = Sender(my_socket=opts.my_socket, source_list=source_list)
+        logger.info('Starting sender with delay of %d sec', opts.delay)
+        time.sleep(opts.delay)
+        node.start()
+
+    #--- common management util
+
+    def setup_logger(self, opts):
+        root = logging.getLogger()
+        root.setLevel(opts.log.upper())
+        stream_handler = colorizing.ColorizingStreamHandler()
+        stream_handler.setFormatter(logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+        root.addHandler(stream_handler)
+
+if __name__ == '__main__':
+    Manage().main(loop=cmdln.LOOP_IF_EMPTY)

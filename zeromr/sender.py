@@ -2,7 +2,7 @@
 import zmq
 
 from .base import BaseEndpoint
-from .kvstore import RedisStore
+from .redis_kvstore import RedisStore
 
 
 class Sender(BaseEndpoint):

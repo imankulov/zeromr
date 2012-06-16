@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from nose.tools import eq_
-from zeromr.kvstore import RedisStore
+from zeromr.redis_kvstore import RedisStore
 
 
 def test_kvstore():

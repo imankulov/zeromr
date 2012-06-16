@@ -18,7 +18,7 @@ def word_count_reduce(word, values):
 
 def read_file(source):
     """
-    "Source reader". Reads contents of the file line by line
+    "Source reader". Read contents of the file line by line
 
     Yield key, value in the form of (lineno, line)
     """

@@ -18,8 +18,7 @@ setup(
     author_email='info@netangels.ru',
     packages=find_packages(),
     scripts=[
-        'bin/worker',
-        'bin/sender',
+        'bin/zeromr',
     ],
     url='http://github.com/imankulov/zeromr',
     license = 'BSD License',
